@@ -26,7 +26,7 @@ typedef struct {
 static int gt_fd = -1;
 static int gt_width = 640, gt_height = 480;
 static int gt_min_x = 0, gt_max_x = 639, gt_min_y = 0, gt_max_y = 479;
-static int gt_slot;
+static int gt_current_slot;
 static int gt_was_enabled;
 static double gt_next_scan;
 static char gt_device_name[128];
@@ -150,17 +150,17 @@ void granny_touch_feed_event(int type, int code, int value)
     if (type == EV_ABS) {
         switch (code) {
         case ABS_MT_SLOT:
-            if (value >= 0 && value < GT_SLOTS) gt_slot = value;
+            if (value >= 0 && value < GT_SLOTS) gt_current_slot = value;
             break;
         case ABS_MT_TRACKING_ID:
-            gt_now[gt_slot].active = value >= 0;
-            gt_now[gt_slot].tracking = value;
+            gt_now[gt_current_slot].active = value >= 0;
+            gt_now[gt_current_slot].tracking = value;
             break;
         case ABS_MT_POSITION_X:
-            gt_now[gt_slot].x = value;
+            gt_now[gt_current_slot].x = value;
             break;
         case ABS_MT_POSITION_Y:
-            gt_now[gt_slot].y = value;
+            gt_now[gt_current_slot].y = value;
             break;
         }
     } else if (type == EV_SYN && code == SYN_REPORT) {
@@ -238,14 +238,14 @@ void granny_touch_poll(int enabled)
                 if (ev[i].type == EV_ABS) {
                     switch (ev[i].code) {
                     case ABS_MT_SLOT:
-                        if (ev[i].value >= 0 && ev[i].value < GT_SLOTS) gt_slot = ev[i].value;
+                        if (ev[i].value >= 0 && ev[i].value < GT_SLOTS) gt_current_slot = ev[i].value;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        gt_now[gt_slot].active = ev[i].value >= 0;
-                        gt_now[gt_slot].tracking = ev[i].value;
+                        gt_now[gt_current_slot].active = ev[i].value >= 0;
+                        gt_now[gt_current_slot].tracking = ev[i].value;
                         break;
-                    case ABS_MT_POSITION_X: gt_now[gt_slot].x = ev[i].value; break;
-                    case ABS_MT_POSITION_Y: gt_now[gt_slot].y = ev[i].value; break;
+                    case ABS_MT_POSITION_X: gt_now[gt_current_slot].x = ev[i].value; break;
+                    case ABS_MT_POSITION_Y: gt_now[gt_current_slot].y = ev[i].value; break;
                     }
                 } else if (ev[i].type == EV_SYN && ev[i].code == SYN_REPORT) {
                     gt_flush(enabled);
