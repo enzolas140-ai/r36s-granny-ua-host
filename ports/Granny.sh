@@ -95,15 +95,15 @@ else
   "$GAMEDIR/granny-dualtouch" >"$GAMEDIR/logs/dualtouch.log" 2>&1 &
 fi
 mapper_pid=$!
+# Give the privileged mapper a moment to create its virtual input devices.
+# Do not test/wait on the sudo wrapper PID here: PortMaster may reap that
+# wrapper while the root-owned mapper child is still alive. That false
+# negative previously prevented ua_host64 from ever launching.
 sleep 1
-if ! ps -p "$mapper_pid" >/dev/null 2>&1; then
-  wait "$mapper_pid" 2>/dev/null || true
-  mapper_pid=""
-  echo "ERROR: Granny DualTouch mapper did not start"
-  command -v pm_message >/dev/null 2>&1 && pm_message "Granny: falha ao iniciar os controles."
-  exit 4
+echo "Granny DualTouch launch requested; supervisor PID=$mapper_pid"
+if [ -n "$ESUDO" ] && [ -s "$mapper_pidfile" ]; then
+  echo "Granny DualTouch child PID=$(cat "$mapper_pidfile" 2>/dev/null)"
 fi
-echo "Granny DualTouch mapper PID=$mapper_pid"
 
 if [ -n "$GPTOKEYB" ] && [ -f "$GAMEDIR/granny_hotkey.gptk" ]; then
   $GPTOKEYB "ua_host64" -c "$GAMEDIR/granny_hotkey.gptk" &
