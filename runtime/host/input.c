@@ -24,6 +24,7 @@
 // UA_KEYBOARD=1 its keys also reach the game as an Android keyboard (KeyEvents from a
 // "Hardware Keyboard" device) while none is open.
 #include "input.h"
+#include "granny_touch.h"
 #include "frames.h"
 #include "osk.h"
 #include "pointer.h"
@@ -174,6 +175,7 @@ int input_init(int width, int height)
     if (!pads_found) fprintf(stderr, "[input] no gamepad\n");
     if (!pads_found && getenv("UA_VIRTUAL_PAD") && !strcmp(getenv("UA_VIRTUAL_PAD"), "1")) scripted_pad();
     pointer_init(width, height, &next_id);
+    granny_touch_init(width, height);
     osk_init(width, height);
     if (getenv("UA_KEYBOARD") && !strcmp(getenv("UA_KEYBOARD"), "1"))
     {
@@ -515,6 +517,7 @@ void input_poll(void)
             break;
         }
     }
+    granny_touch_poll(started);
     for (int i = 0; i < MAX_PADS; i++) if (moved[i] && pads[i].gc) send_axes(&pads[i]);
     live_input();                       // (cheap: a stat of input.req every 0.25 s)
     if (next_press < nscript) script_run();

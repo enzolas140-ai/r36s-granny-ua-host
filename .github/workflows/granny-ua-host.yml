@@ -23,6 +23,11 @@ jobs:
       - name: Build ARM64 runtime and ua_host
         shell: bash
         run: ARCH=arm64 runtime/build.sh
+      - name: Test Granny dual-touch evdev bridge
+        shell: bash
+        run: |
+          gcc -std=gnu11 -O2 -Wall -Wextra -I runtime/host -I runtime/jni runtime/host/granny_touch.c runtime/host/test/test_granny_touch.c -o /tmp/test_granny_touch
+          /tmp/test_granny_touch
       - name: Test pointer, cursor drawing and GL state preservation
         shell: bash
         run: ARCH=arm64 runtime/host/test/pointer_test.sh
@@ -48,6 +53,7 @@ jobs:
           UA_POINTER_SPEED=1.4
           UA_POINTER_SIZE=2
           UA_POINTER_HIDE=0
+          UA_EVDEV_TOUCH_NAME="Granny Dual Touchscreen"
           EOF
           tar -czf granny-ua-host64-arm64.tar.gz -C dist .
       - name: Upload ARM64 host artifact

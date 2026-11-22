@@ -1,23 +1,22 @@
-﻿# Granny UA Host (R36S / ARM64)
+# Granny UA Host (R36S / ARM64)
 
-This fork builds a dedicated ARM64 `ua_host64` for the Granny Android Unity port. It is based on the PortMaster Unity runtime and keeps the host source separate from the game APK and game data.
+This fork builds a Granny-specific ARM64 `ua_host64` from the PortMaster Unity runtime. The host source is separate from the APK and game data.
 
-## Granny pointer profile
+## Granny input profile
 
-The packaged `granny-pointer.env` configures the host as follows:
-
-- R3 toggles pointer mode on/off.
+- R3 toggles the visible mouse pointer on and off.
 - Right stick moves the pointer.
-- A performs a left click while pointer mode is on.
-- The host draws the cursor over the Unity frame; `UA_POINTER_HIDE=0` keeps it visible.
-- When pointer mode is off, the pad returns to normal game input.
+- A performs a left click while pointer mode is active.
+- The host draws the cursor over the Unity frame and restores the GL state it changes.
+- The host also reads the `Granny Dual Touchscreen` evdev device and forwards its two multitouch slots as Android MotionEvents.
+- The existing Granny mapper and the host use R3 together: normal mode forwards dual touch; pointer mode stops mapper touch and uses the drawn mouse cursor.
 
-The host's pointer implementation draws the cursor in the GLES swap path and restores the GL state it changes. The CI workflow runs the upstream pointer tests, including cursor pixels and GL-state preservation, before uploading the binary.
+## Build and tests
 
-## Build
+GitHub Actions builds the ARM64 runtime and publishes `granny-ua-host64-arm64` as an artifact. CI tests the dual-touch event sequence and the upstream cursor rendering / GL-state preservation tests before packaging.
 
-GitHub Actions builds the ARM64 runtime and publishes `granny-ua-host64-arm64` as an artifact. No APK, OBB, or proprietary Granny game files are included in this repository or build artifact.
+No APK, OBB, or proprietary Granny game files are included in this repository or build artifact.
 
 ## Compatibility note
 
-The binary is an ARM64 Linux host for Unity Android IL2CPP players. Granny 1.7.9 uses Unity 2020.1.4f1 and arm64-v8a. The actual game launch and pointer behavior still need verification on the R36S; passing the host's pointer tests does not by itself prove Granny's UI/gameplay accepts mouse events.
+Granny 1.7.9 is Unity 2020.1.4f1, IL2CPP, arm64-v8a, GLES2/GLES3. The APK was successfully inspected by `pmunity apk --target arm64 --dry-run`. The actual host launch and input behavior still require testing on the R36S.
