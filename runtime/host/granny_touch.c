@@ -218,7 +218,15 @@ void granny_touch_init(int width, int height)
 void granny_touch_poll(int enabled)
 {
     if (!gt_device_name[0]) return;
-    if (enabled && !gt_was_enabled) memset(gt_sent, 0, sizeof gt_sent);
+    if (enabled && !gt_was_enabled) {
+        // A finger may still be down while the pointer/mouse mode was active.
+        // Treat the next evdev report as a fresh Android DOWN, not a stale MOVE.
+        memset(gt_sent, 0, sizeof gt_sent);
+    } else if (!enabled && gt_was_enabled && gt_count(gt_sent)) {
+        // Release Android contacts when R3 switches from DualTouch to mouse mode.
+        gt_send(UP_ACTION_CANCEL, gt_sent);
+        memset(gt_sent, 0, sizeof gt_sent);
+    }
     gt_was_enabled = enabled;
 
     if (gt_fd < 0) {

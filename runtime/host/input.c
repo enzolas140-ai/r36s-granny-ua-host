@@ -517,7 +517,9 @@ void input_poll(void)
             break;
         }
     }
-    granny_touch_poll(started);
+    // In DualTouch mode the evdev contacts drive Android touch. When R3 enables
+    // the virtual mouse, stop forwarding those contacts to avoid mouse+touch overlap.
+    granny_touch_poll(started && !pointer_enabled());
     for (int i = 0; i < MAX_PADS; i++) if (moved[i] && pads[i].gc) send_axes(&pads[i]);
     live_input();                       // (cheap: a stat of input.req every 0.25 s)
     if (next_press < nscript) script_run();
