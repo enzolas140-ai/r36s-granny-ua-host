@@ -4,7 +4,7 @@ This fork builds a Granny-specific ARM64 `ua_host64` from the PortMaster Unity r
 
 ## Granny input profile
 
-- R3 toggles the visible mouse pointer on and off.
+- The port starts in DualTouch mode with the cursor hidden. R3 toggles the visible mouse pointer on and off.
 - Right stick moves the pointer.
 - A performs a left click while pointer mode is active.
 - The host draws the cursor over the Unity frame and restores the GL state it changes.

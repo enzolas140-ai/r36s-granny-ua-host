@@ -249,7 +249,7 @@ int pointer_init(int width, int height, int *next_id)
     const char *e = getenv("UA_POINTER");
     if (!e || !*e || !strcmp(e, "0")) return 0;
     P.events = !strcasecmp(e, "touch") ? EV_TOUCH : EV_MOUSE;
-    P.on = 1;
+    P.on = !(getenv("UA_POINTER_START_OFF") && strcmp(getenv("UA_POINTER_START_OFF"), "0") != 0);
     const char *mv = getenv("UA_POINTER_MOVE") ? getenv("UA_POINTER_MOVE") : "lstick,dpad";
     if (strstr(mv, "lstick")) P.move |= MV_LSTICK;
     if (strstr(mv, "rstick")) P.move |= MV_RSTICK;

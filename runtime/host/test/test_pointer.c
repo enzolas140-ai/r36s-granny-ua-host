@@ -336,14 +336,18 @@ static void dstickauto(void)
 static void toggle(void)
 {
     setenv("UA_POINTER", "mouse", 1);
+    setenv("UA_POINTER_START_OFF", "1", 1);
     setenv("UA_POINTER_TOGGLE", "select", 1);
     setenv("UA_POINTER_SHOTS", "1", 1);
     setenv("UA_POINTER_BUTTONS", "r1:left", 1);
     int id = 1;
     CHECK(pointer_init(640, 480, &id) == 1);
-    CHECK(pointer_in_shots());
+    CHECK(pointer_in_shots() && !pointer_enabled());
     pointer_start();
     CHECK(pointer_key(UP_KEYCODE_BUTTON_A, 1) == 0);    // A is not a mouse button here
+    CHECK(pointer_key(UP_KEYCODE_BUTTON_R1, 1) == 0);    // default is dual-touch: A / R1 stay game buttons
+    CHECK(pointer_key(UP_KEYCODE_BUTTON_SELECT, 1) == 1 && pointer_enabled());
+    CHECK(pointer_key(UP_KEYCODE_BUTTON_SELECT, 0) == 1);
     CHECK(pointer_key(UP_KEYCODE_BUTTON_R1, 1) == 1 && last('m')->action == UP_ACTION_DOWN);
     int n0 = nev;
     CHECK(pointer_key(UP_KEYCODE_BUTTON_SELECT, 1) == 1);    // off: the held button is released, the mouse leaves

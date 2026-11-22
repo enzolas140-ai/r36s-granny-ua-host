@@ -40,21 +40,15 @@ jobs:
       - name: Package Granny host build
         shell: bash
         run: |
-          mkdir -p dist
-          cp runtime/host/out/arm64/ua_host dist/ua_host64
+          mkdir -p dist/granny
+          cp runtime/host/out/arm64/ua_host dist/granny/ua_host64
+          cp ports/Granny.sh dist/Granny.sh
+          cp ports/granny/granny-pointer.env dist/granny/granny-pointer.env
+          cp ports/granny/granny_hotkey.gptk dist/granny/granny_hotkey.gptk
+          cp ports/granny/README.md dist/granny/README.md
           cp LICENSE dist/LICENSE
           cp THIRD_PARTY.md dist/THIRD_PARTY.md
           cp -R runtime/media/out/arm64/licenses dist/media-licenses
-          cat > dist/granny-pointer.env <<'EOF'
-          UA_POINTER=mouse
-          UA_POINTER_MOVE=rstick
-          UA_POINTER_BUTTONS=a:left
-          UA_POINTER_TOGGLE=r3
-          UA_POINTER_SPEED=1.4
-          UA_POINTER_SIZE=2
-          UA_POINTER_HIDE=0
-          UA_EVDEV_TOUCH_NAME="Granny Dual Touchscreen"
-          EOF
           tar -czf granny-ua-host64-arm64.tar.gz -C dist .
       - name: Upload ARM64 host artifact
         uses: actions/upload-artifact@v4
