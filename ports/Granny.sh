@@ -65,12 +65,20 @@ else
 fi
 
 mapper_pid=""
+mapper_pidfile="$GAMEDIR/data/granny-dualtouch.pid"
 gptk_pid=""
 finish() {
   rc=$?
   trap - EXIT INT TERM HUP
   [ -z "$gptk_pid" ] || kill "$gptk_pid" 2>/dev/null || true
-  [ -z "$mapper_pid" ] || kill "$mapper_pid" 2>/dev/null || true
+  if [ -f "$mapper_pidfile" ]; then
+    touch_pid=$(cat "$mapper_pidfile" 2>/dev/null)
+    if [ -n "$touch_pid" ]; then
+      if [ -n "$ESUDO" ]; then $ESUDO kill -TERM "$touch_pid" 2>/dev/null || true; else kill -TERM "$touch_pid" 2>/dev/null || true; fi
+    fi
+    rm -f "$mapper_pidfile"
+  fi
+  [ -z "$mapper_pid" ] || kill -TERM "$mapper_pid" 2>/dev/null || true
   dmesg 2>/dev/null | tail -100 >"$GAMEDIR/logs/dmesg.log" 2>&1 || true
   command -v pm_finish >/dev/null 2>&1 && pm_finish
   echo "Granny ua_host64 exit=$rc"
@@ -82,13 +90,13 @@ trap 'exit 143' TERM
 trap 'exit 129' HUP
 
 if [ -n "$ESUDO" ]; then
-  $ESUDO "$GAMEDIR/granny-dualtouch" >"$GAMEDIR/logs/dualtouch.log" 2>&1 &
+  $ESUDO sh -c '"$1" & child=$!; echo "$child" > "$2"; wait "$child"' sh "$GAMEDIR/granny-dualtouch" "$mapper_pidfile" >"$GAMEDIR/logs/dualtouch.log" 2>&1 &
 else
   "$GAMEDIR/granny-dualtouch" >"$GAMEDIR/logs/dualtouch.log" 2>&1 &
 fi
 mapper_pid=$!
 sleep 1
-if ! kill -0 "$mapper_pid" 2>/dev/null; then
+if ! ps -p "$mapper_pid" >/dev/null 2>&1; then
   wait "$mapper_pid" 2>/dev/null || true
   mapper_pid=""
   echo "ERROR: Granny DualTouch mapper did not start"
